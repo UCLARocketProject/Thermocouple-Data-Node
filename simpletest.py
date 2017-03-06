@@ -24,6 +24,10 @@ import logging
 import time
 import Adafruit_GPIO.SPI as SPI
 import RPi.GPIO as rpi_gpio
+from threading import Thread
+import time
+from multiprocessing import Queue
+import sys
 
 # Local Imports
 from MAX31856_Driver import MAX31856 as MAX31856
@@ -36,17 +40,46 @@ SPI_PORT   = 0
 SPI_DEVICE = 0
 sensor = MAX31856(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE), cs=[11, 7, 37, 3, 13], tc_type=MAX31856.MAX31856_J_TYPE)
 
+q = Queue()
+sleepTime1 = 0.5
+sleepTime2 = 2.5
+senderDie = False
+counter = 0
+
+def sender():
+  global counter
+  while not senderDie:
+    try:
+      tempRead = q.get(timeout=1)
+      #Change to send data to server
+      print tempRead
+      counter -= 1
+      #print "Counter: ", str(counter)
+    except:
+      print "Unexpected Sender Error: ", sys.exc_info()[0]
+
+t = Thread(target=sender)
+t.start()
+backoffSize = 1000000 #SET TO BETTER VALUE
+
 # Loop printing measurements every second.
 print('Press Ctrl-C to quit.')
 try:
     while True:
         temp = sensor.readTempC()
         for i, t in enumerate(temp):
-           print("TC " + str(i+1) + ": " + str(t))    
-        time.sleep(1.0)
-        print("")
-        print("==================")
-        print("")
+           tempRead = str(i+1) + ", " + str(time.time()) + ", " + str(t)
+           q.put(tempRead)
+           counter += 1
+        if counter > backoffSize:
+          sleepTime = sleepTime2
+        else:
+          sleepTime = sleepTime1
+        time.sleep(sleepTime)
+        #print("")
+        #print("==================")
+        #print("")
 except:
-    print("Goodbye")
+    print "Unexpected Reader Error: ", sys.exc_info()[0]
+    senderDie = True
     rpi_gpio.cleanup()
