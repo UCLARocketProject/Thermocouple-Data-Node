@@ -1,4 +1,4 @@
-# Copyright (c) 2016 John Robinson
+#Copyright (c) 2016 John Robinson
 # Author: John Robinson
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,7 +26,7 @@ import Adafruit_GPIO.SPI as SPI
 import RPi.GPIO as rpi_gpio
 
 # Local Imports
-from Adafruit_MAX31856 import MAX31856 as MAX31856
+from MAX31856_Driver import MAX31856 as MAX31856
 
 logging.basicConfig(filename='log.txt', level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 _logger = logging.getLogger(__name__)
@@ -34,15 +34,19 @@ _logger = logging.getLogger(__name__)
 # Raspberry Pi hardware SPI configuration.
 SPI_PORT   = 0
 SPI_DEVICE = 0
-sensor = MAX31856(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE), cs=[16, 3], tc_type=MAX31856.MAX31856_J_TYPE)
+sensor = MAX31856(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE), cs=[11, 7, 37, 3, 13], tc_type=MAX31856.MAX31856_J_TYPE)
 
 # Loop printing measurements every second.
 print('Press Ctrl-C to quit.')
 try:
     while True:
         temp = sensor.readTempC()
-        for t in temp:
-            print('Thermocouple Temperature: {0:0.3F}*C'.format(t))
+        for i, t in enumerate(temp):
+           print("TC " + str(i+1) + ": " + str(t))    
         time.sleep(1.0)
+        print("")
+        print("==================")
+        print("")
 except:
+    print("Goodbye")
     rpi_gpio.cleanup()

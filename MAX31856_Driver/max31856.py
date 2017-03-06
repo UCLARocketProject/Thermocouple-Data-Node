@@ -87,7 +87,6 @@ class MAX31856(object):
     #Rocket Project Mod: You max specify cs pin as any pin you like, and the library will allow it to be a CS pin.
     #the cs pin is the number on the RPi pinout. not the GPIO number, not the BCM number, just the plain old number
     def __init__(self, tc_type=MAX31856_J_TYPE, avgsel=0x0, cs=None, spi=None):
-        print("TEST!")
         """Initialize MAX31856 device with software SPI on the specified CLK,
         CS, and DO pins.  Alternatively can specify hardware SPI by sending an
         Adafruit_GPIO.SPI.SpiDev device in the spi parameter.
@@ -111,6 +110,7 @@ class MAX31856(object):
                     print("Hey you can't use the normal hardware CS pins because it will break our workaround!")
                     exit()
                 rpi_gpio.setup(c, rpi_gpio.OUT)
+                rpi_gpio.output(c, 1)
         # Handle hardware SPI
         if spi is not None:
             self._logger.debug('Using hardware SPI')
