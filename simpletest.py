@@ -28,6 +28,7 @@ from threading import Thread
 import time
 from multiprocessing import Queue
 import sys
+import MySQLdb
 
 # Local Imports
 from MAX31856_Driver import MAX31856 as MAX31856
@@ -50,11 +51,24 @@ def sender():
   global counter
   while not senderDie:
     try:
-      tempRead = q.get(timeout=1)
+      tempRead = q.get(timeout=1) #Change to give list tuple with values
       #Change to send data to server
       print tempRead
-      counter -= 1
-      #print "Counter: ", str(counter)
+
+      #Database code, needs changed values
+      db = MySQLdb.connect("IP","user","password","database")
+      cursor = db.cursor()
+      sql = "INSERT INTO DATABASENAME(TCNUM, TIME, TEMP) VALUES ('%d', '%f', '%s')" % (tcNum, time, temp)
+      try:
+        # Execute the SQL command
+        cursor.execute(sql)
+        # Commit your changes in the database
+        db.commit()
+      except:
+        # Rollback in case there is any error
+        db.rollback()
+        counter -= 1
+        
     except:
       print "Unexpected Sender Error: ", sys.exc_info()[0]
 
@@ -68,9 +82,10 @@ try:
     while True:
         temp = sensor.readTempC()
         for i, t in enumerate(temp):
-           tempRead = str(i+1) + ", " + str(time.time()) + ", " + str(t)
-           q.put(tempRead)
-           counter += 1
+          #tempRead = str(i+1) + ", " + str(time.time()) + ", " + str(t)
+          tempRead = (str(i+1), str(time.time()), str(t) #FIX THIS REAL QUICK
+          q.put(tempRead)
+          counter += 1
         if counter > backoffSize:
           sleepTime = sleepTime2
         else:
