@@ -42,40 +42,31 @@ SPI_DEVICE = 0
 sensor = MAX31856(spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE), cs=[11, 7, 37, 3, 13], tc_type=MAX31856.MAX31856_J_TYPE)
 
 q = Queue()
-sleepTime1 = 0.5
-sleepTime2 = 2.5
+sleepTime = 0.5
 senderDie = False
 counter = 0
 
 def sender():
-  global counter
+  db = MySQLdb.connect("127.0.0.1","root","","Pinetree1&")
+  cursor = db.cursor()
   while not senderDie:
     try:
       tcNum, time, temp = q.get(timeout=1) #Change to give list tuple with values
-      
-      #Database code, needs changed values
-      db = MySQLdb.connect("IP","user","password","database")
-      cursor = db.cursor()
+      #db = MySQLdb.connect("127.0.0.1","root","","Pinetree1&")
+      #cursor = db.cursor()
       sql = "INSERT INTO DATABASENAME(TCNUM, TIME, TEMP) VALUES ('%d', '%f', '%s')" % (tcNum, time, temp)
       try:
-        # Execute the SQL command
         cursor.execute(sql)
-        # Commit your changes in the database
         db.commit()
       except:
-        # Rollback in case there is any error
         db.rollback()
-        counter -= 1
-        
+        #counter -= 1
     except:
       print "Unexpected Sender Error: ", sys.exc_info()[0]
 
 t = Thread(target=sender)
 t.start()
-backoffSize = 1000000 #SET TO BETTER VALUE
 
-# Loop printing measurements every second.
-print('Press Ctrl-C to quit.')
 try:
     while True:
         temp = sensor.readTempC()
@@ -83,11 +74,7 @@ try:
           #tempRead = str(i+1) + ", " + str(time.time()) + ", " + str(t)
           tempRead = (i+1, time.time(), t)
           q.put(tempRead)
-          counter += 1
-        if counter > backoffSize:
-          sleepTime = sleepTime2
-        else:
-          sleepTime = sleepTime1
+          #counter += 1
         time.sleep(sleepTime)
 except:
     print "Unexpected Reader Error: ", sys.exc_info()[0]
