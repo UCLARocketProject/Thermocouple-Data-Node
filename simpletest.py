@@ -47,14 +47,13 @@ senderDie = False
 counter = 0
 
 def sender():
-  db = MySQLdb.connect("127.0.0.1","root","","Pinetree1&")
+  db = MySQLdb.connect(host="127.0.0.1", user="root", passwd="rockets", db="ThermocoupleDB")
   cursor = db.cursor()
   while not senderDie:
     try:
       tcNum, time, temp = q.get(timeout=1) #Change to give list tuple with values
-      #db = MySQLdb.connect("127.0.0.1","root","","Pinetree1&")
-      #cursor = db.cursor()
-      sql = "INSERT INTO DATABASENAME(TCNUM, TIME, TEMP) VALUES ('%d', '%f', '%s')" % (tcNum, time, temp)
+      print tcNum, time, temp
+      sql = "INSERT INTO test (time, temp) VALUES ('%f', '%f')" % (time, temp)
       try:
         cursor.execute(sql)
         db.commit()
@@ -70,9 +69,10 @@ t.start()
 try:
     while True:
         temp = sensor.readTempC()
+        timeCurrent = time.time()
         for i, t in enumerate(temp):
           #tempRead = str(i+1) + ", " + str(time.time()) + ", " + str(t)
-          tempRead = (i+1, time.time(), t)
+          tempRead = (i+1, timeCurrent, t)
           q.put(tempRead)
           #counter += 1
         time.sleep(sleepTime)
