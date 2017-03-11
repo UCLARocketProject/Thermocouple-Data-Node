@@ -47,34 +47,35 @@ senderDie = False
 counter = 0
 
 def sender():
-  db = MySQLdb.connect(host="127.0.0.1", user="root", passwd="rockets", db="ThermocoupleDB")
+  db = MySQLdb.connect(host="127.0.0.1", user="root", passwd="rockets", db="testing")
   cursor = db.cursor()
+  sql = "CREATE TABLE IF NOT EXISTS thermocouples (abs_t DOUBLE, rel_t INT, tmp1 DOUBLE, tmp2 DOUBLE, tmp3 DOUBLE, tmp4 DOUBLE, tmp5 DOUBLE)"
+  cursor.execute(sql)
   while not senderDie:
     try:
-      tcNum, time, temp = q.get(timeout=1) #Change to give list tuple with values
-      print tcNum, time, temp
-      sql = "INSERT INTO test (time, temp) VALUES ('%f', '%f')" % (time, temp)
+      abs_t, rel_t, tmp1, tmp2, tmp3, tmp4, tmp5 = q.get(timeout=1)
+      print abs_t, rel_t, tmp1, tmp2, tmp3, tmp4, tmp5
+      sql = "INSERT INTO thermocouples (abs_t, rel_t, tmp1, tmp2, tmp3, tmp4, tmp5) VALUES ('%f', '%i', '%f', '%f', '%f', '%f', '%f')" % (abs_t, rel_t, tmp1, tmp2, tmp3, tmp4, tmp5)
       try:
         cursor.execute(sql)
         db.commit()
       except:
         db.rollback()
-        #counter -= 1
     except:
       print "Unexpected Sender Error: ", sys.exc_info()[0]
 
 t = Thread(target=sender)
+startTime = time.time()
 t.start()
 
 try:
     while True:
         temp = sensor.readTempC()
         timeCurrent = time.time()
-        for i, t in enumerate(temp):
-          #tempRead = str(i+1) + ", " + str(time.time()) + ", " + str(t)
-          tempRead = (i+1, timeCurrent, t)
-          q.put(tempRead)
-          #counter += 1
+        #for i, t in enumerate(temp):
+        #tempRead = str(i+1) + ", " + str(time.time()) + ", " + str(t)
+        tempRead = (timeCurrent, int(1000*(timeCurrent - startTime)), temp[0], temp[1], temp[2], temp[3], temp[4])
+        q.put(tempRead)
         time.sleep(sleepTime)
 except:
     print "Unexpected Reader Error: ", sys.exc_info()[0]
