@@ -221,7 +221,7 @@ def sender():
         while not senderDie:
                 try:
                         abs_t, rel_t, tmp1, tmp2, tmp3, tmp4, tmp5 = q.get(timeout=1)
-                        print abs_t, rel_t, tmp1, tmp2, tmp3, tmp4, tmp5
+                        print "%20s %20s %20s %20s %20s %20s %20s\n" % tempRead
                         sql = "INSERT INTO thermocouples (abs_t, rel_t, tmp1, tmp2, tmp3, tmp4, tmp5) VALUES ('%f', '%i', '%f', '%f', '%f', '%f', '%f')" % (abs_t, rel_t, tmp1, tmp2, tmp3, tmp4, tmp5)
                         try:
                                 cursor.execute(sql)
@@ -253,8 +253,6 @@ if __name__ == "__main__":
                         timeCurrent = time.time()
                         tempRead = (timeCurrent, int(1000*(timeCurrent - startTime)), temp[0], temp[1], temp[2], temp[3], temp[4])
                         q.put(tempRead)
-                        print tempRead
-
         except:
                 print "Unexpected Reader Error: ", sys.exc_info()[0]
                 senderDie = True
