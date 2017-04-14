@@ -51,10 +51,8 @@ def sender():
   global counter
   while not senderDie:
     try:
-      tempRead = q.get(timeout=1) #Change to give list tuple with values
-      #Change to send data to server
-      print tempRead
-
+      tcNum, time, temp = q.get(timeout=1) #Change to give list tuple with values
+      
       #Database code, needs changed values
       db = MySQLdb.connect("IP","user","password","database")
       cursor = db.cursor()
@@ -83,7 +81,7 @@ try:
         temp = sensor.readTempC()
         for i, t in enumerate(temp):
           #tempRead = str(i+1) + ", " + str(time.time()) + ", " + str(t)
-          tempRead = (str(i+1), str(time.time()), str(t) #FIX THIS REAL QUICK
+          tempRead = (i+1, time.time(), t)
           q.put(tempRead)
           counter += 1
         if counter > backoffSize:
@@ -91,9 +89,6 @@ try:
         else:
           sleepTime = sleepTime1
         time.sleep(sleepTime)
-        #print("")
-        #print("==================")
-        #print("")
 except:
     print "Unexpected Reader Error: ", sys.exc_info()[0]
     senderDie = True
