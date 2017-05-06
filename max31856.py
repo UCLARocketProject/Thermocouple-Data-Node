@@ -214,7 +214,7 @@ q = Queue()
 senderDie = False
 
 def sender():
-        db = MySQLdb.connect(host="127.0.0.1", user="root", passwd="rockets", db="testing")
+        db = MySQLdb.connect(host="127.0.0.1", user="root", passwd="pinetree", db="testing")
         cursor = db.cursor()
         sql = "CREATE TABLE IF NOT EXISTS thermocouples (abs_t DOUBLE, rel_t INT, tmp1 DOUBLE, tmp2 DOUBLE, tmp3 DOUBLE, tmp4 DOUBLE, tmp5 DOUBLE)"
         cursor.execute(sql)
@@ -237,6 +237,7 @@ def sender():
 if __name__ == "__main__":
 
 	import max31856
+  #V5 = 2, V3.3 = 17. G = 6, 9, 14
 	csPins = [11, 13, 15, 12, 16]
 	misoPin = 5
 	mosiPin = 7
