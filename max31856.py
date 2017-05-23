@@ -156,7 +156,7 @@ class max31856(object):
                 for i in range(5):
                         self.writeRegister(0, 0x42, i)
 		# conversion time is less than 150ms
-		time.sleep(.2) #give it 200ms for conversion
+		time.sleep(.05) #give it 200ms for conversion
 
 	def writeRegister(self, regNum, dataByte, csNum):
 		GPIO.output(self.csPins[csNum], GPIO.LOW)
@@ -216,13 +216,13 @@ senderDie = False
 def sender():
         db = MySQLdb.connect(host="127.0.0.1", user="root", passwd="pinetree", db="testing")
         cursor = db.cursor()
-        sql = "CREATE TABLE IF NOT EXISTS thermocouples (abs_t DOUBLE, rel_t INT, tmp1 DOUBLE, tmp2 DOUBLE, tmp3 DOUBLE, tmp4 DOUBLE, tmp5 DOUBLE)"
+        sql = "CREATE TABLE IF NOT EXISTS thermocouple (abs_t DOUBLE, rel_t INT, tmp1 DOUBLE, tmp2 DOUBLE, tmp3 DOUBLE, tmp4 DOUBLE, tmp5 DOUBLE)"
         cursor.execute(sql)
         while not senderDie:
                 try:
                         abs_t, rel_t, tmp1, tmp2, tmp3, tmp4, tmp5 = q.get(timeout=1)
                         print "%20s %20s %20s %20s %20s %20s %20s\n" % tempRead
-                        sql = "INSERT INTO thermocouples (abs_t, rel_t, tmp1, tmp2, tmp3, tmp4, tmp5) VALUES ('%f', '%i', '%f', '%f', '%f', '%f', '%f')" % (abs_t, rel_t, tmp1, tmp2, tmp3, tmp4, tmp5)
+                        sql = "INSERT INTO thermocouple (abs_t, rel_t, tmp1, tmp2, tmp3, tmp4, tmp5) VALUES ('%f', '%i', '%f', '%f', '%f', '%f', '%f')" % (abs_t, rel_t, tmp1, tmp2, tmp3, tmp4, tmp5)
                         try:
                                 cursor.execute(sql)
                                 db.commit()
